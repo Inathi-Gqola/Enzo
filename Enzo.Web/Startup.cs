@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Enzo.Web.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Hangfire;
 
 namespace Enzo.Web
 {
@@ -40,12 +41,20 @@ namespace Enzo.Web
             services.AddDefaultIdentity<IdentityUser>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
+            services.AddHangfire(configuration => {
+
+                configuration.UseSqlServerStorage( Configuration.GetConnectionString("HangFireConnection"));
+            });
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseHangfireServer();
+            app.UseHangfireDashboard();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
